@@ -94,7 +94,7 @@ public class BookServiceTest {
         request.setStock(5);
         request.setPublishedDate("2023-01-01");
         request.setFeatured(true);
-        
+
         when(bookRepository.save(any(Book.class))).thenAnswer(i -> {
             Book b = i.getArgument(0);
             b.setBookId(2L);
@@ -102,7 +102,7 @@ public class BookServiceTest {
         });
 
         BookResponse response = bookService.addBook(request, "ADMIN");
-        
+
         assertNotNull(response);
         assertEquals(2L, response.getBookId());
         assertTrue(response.getFeatured());
@@ -138,9 +138,9 @@ public class BookServiceTest {
     @Test
     void testDeleteBook_Success() {
         when(bookRepository.findById(1L)).thenReturn(Optional.of(sampleBook));
-        
+
         bookService.deleteBook(1L, "ADMIN");
-        
+
         assertFalse(sampleBook.getActive());
         verify(bookRepository, times(1)).save(sampleBook);
         verify(bookSearchRepository, times(1)).deleteById("1");
@@ -160,6 +160,8 @@ public class BookServiceTest {
     @Test
     void testToggleFeatured() {
         when(bookRepository.findById(1L)).thenReturn(Optional.of(sampleBook));
+        // any method specifies that accept the book type object in parameter it should
+        // not be void or null
         when(bookRepository.save(any(Book.class))).thenReturn(sampleBook);
 
         bookService.toggleFeatured(1L, "ADMIN");

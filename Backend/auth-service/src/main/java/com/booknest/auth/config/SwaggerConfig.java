@@ -1,4 +1,5 @@
 package com.booknest.auth.config;
+
 import io.swagger.v3.oas.models.servers.Server;
 import java.util.List;
 
@@ -13,13 +14,10 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 
 @Configuration
-@OpenAPIDefinition(
-    info = @Info(
-        title = "Auth Service API", 
-        description = "Handles User Registration, Login, and JWT generation.",
-        version = "v1"
-    ),
-    security = @SecurityRequirement(name = "bearerAuth")
+@OpenAPIDefinition(info = @Info(title = "Auth Service API", description = "Handles User Registration, Login, and JWT generation.", version = "v1"), security = @SecurityRequirement(name = "bearerAuth")
+// it tells the swagger ui to use the bearerAuth security scheme for all
+// endpoints
+// which will add an "Authorize" padlock to the UI
 )
 public class SwaggerConfig {
 

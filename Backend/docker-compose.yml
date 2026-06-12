@@ -79,10 +79,11 @@ services:
     volumes:
       - es-data:/usr/share/elasticsearch/data
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=5s || exit 1"]
       interval: 20s
-      timeout: 10s
-      retries: 5
+      timeout: 15s
+      retries: 10
+      start_period: 60s
 
   # ============================================================
   # MICROSERVICES
@@ -152,16 +153,14 @@ services:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
       - SPRING_BOOT_ADMIN_CLIENT_URL=http://admin-server:9090
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/booknest_book?useSSL=false&allowPublicKeyRetrieval=true
-      - SPRING_REDIS_HOST=redis-stack
       - SPRING_ELASTICSEARCH_URIS=http://elasticsearch:9200
       - APP_UPLOAD_DIR=/app/uploads
       - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
       - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
       - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
+      - SPRING_BOOT_ADMIN_CLIENT_INSTANCE_SERVICE-BASE-URL=http://book-service:8082
     depends_on:
       mysql:
-        condition: service_healthy
-      redis-stack:
         condition: service_healthy
       elasticsearch:
         condition: service_healthy

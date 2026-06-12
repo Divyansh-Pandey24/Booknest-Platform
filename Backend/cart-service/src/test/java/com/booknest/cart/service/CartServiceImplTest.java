@@ -28,9 +28,12 @@ import static org.mockito.Mockito.*;
 @DisplayName("CartServiceImpl Unit Tests")
 class CartServiceImplTest {
 
-    @Mock private CartRepository cartRepository;
-    @Mock private CartItemRepository cartItemRepository;
-    @Mock private BookClient bookClient;
+    @Mock
+    private CartRepository cartRepository;
+    @Mock
+    private CartItemRepository cartItemRepository;
+    @Mock
+    private BookClient bookClient;
 
     @InjectMocks
     private CartServiceImpl cartService;

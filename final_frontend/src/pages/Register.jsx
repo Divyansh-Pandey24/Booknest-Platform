@@ -24,6 +24,12 @@ function Register() {
       toast.error("Required fields must be completed.");
       return false;
     }
+    // Ensure fullName only contains letters, single spaces, hyphens, and apostrophes
+    const nameRegex = /^[a-zA-Z\-']+(?: [a-zA-Z\-']+)*$/;
+    if (!nameRegex.test(data.fullName)) {
+      toast.error("Full name can only contain letters, single spaces, hyphens, and apostrophes, and cannot start or end with a space.");
+      return false;
+    }
     // Ensure password has at least 8 characters, with letters and numbers
     const passRegex = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
     if (!passRegex.test(data.password)) {

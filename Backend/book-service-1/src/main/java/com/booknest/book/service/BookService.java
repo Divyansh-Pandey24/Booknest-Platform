@@ -9,9 +9,7 @@ import com.booknest.book.repository.BookRepository;
 import com.booknest.book.repository.BookSearchRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -119,10 +117,6 @@ public class BookService {
 
     // Registers a new book in the catalog.
     @Transactional
-    @Caching(evict = {
-        @CacheEvict(value = "books:all", allEntries = true),
-        @CacheEvict(value = "books:featured", allEntries = true)
-    })
     public BookResponse addBook(BookRequest request, String role) {
         log.info("Adding new book: {}", request.getTitle());
         verifyAdmin(role);
@@ -145,9 +139,11 @@ public class BookService {
         if (request.getPublishedDate() != null && !request.getPublishedDate().isBlank()) {
             book.setPublishedDate(LocalDate.parse(request.getPublishedDate()));
         }
-        if (request.getFeatured() != null) {
-            book.setFeatured(request.getFeatured());
-        }
+        // Explicitly set active=true so new books are visible in the catalog.
+        // Do NOT rely on the entity field default — JPA/Lombok NoArgsConstructor
+        // can bypass field initializers leading to active=false in the DB.
+        book.setActive(true);
+        book.setFeatured(request.getFeatured() != null ? request.getFeatured() : false);
         
         Book saved = bookRepository.save(book);
         
@@ -158,11 +154,6 @@ public class BookService {
 
     // Updates structural information of an existing book.
     @Transactional
-    @Caching(evict = {
-        @CacheEvict(value = "books:all", allEntries = true),
-        @CacheEvict(value = "books:id", key = "#bookId"),
-        @CacheEvict(value = "books:featured", allEntries = true)
-    })
     public BookResponse updateBook(Long bookId, BookRequest request, String role) {
         log.info("Updating book: {}", bookId);
         verifyAdmin(role);
@@ -193,11 +184,6 @@ public class BookService {
 
     // Soft-deletes a book from the catalog by marking its active flag as false.
     @Transactional
-    @Caching(evict = {
-        @CacheEvict(value = "books:all", allEntries = true),
-        @CacheEvict(value = "books:id", key = "#bookId"),
-        @CacheEvict(value = "books:featured", allEntries = true)
-    })
     public void deleteBook(Long bookId, String role) {
         log.info("Deleting book: {}", bookId);
         verifyAdmin(role);
@@ -219,10 +205,6 @@ public class BookService {
 
     // Explicitly sets a book's physical inventory stock quantity.
     @Transactional
-    @Caching(evict = {
-        @CacheEvict(value = "books:all", allEntries = true),
-        @CacheEvict(value = "books:id", key = "#bookId")
-    })
     public BookResponse updateStock(Long bookId, Integer quantity, String role) {
         log.info("Updating stock for book {} to {}", bookId, quantity);
         verifyAdmin(role);
@@ -239,11 +221,6 @@ public class BookService {
 
     // Toggles whether a book is featured on the application's homepage.
     @Transactional
-    @Caching(evict = {
-        @CacheEvict(value = "books:all", allEntries = true),
-        @CacheEvict(value = "books:id", key = "#bookId"),
-        @CacheEvict(value = "books:featured", allEntries = true)
-    })
     public BookResponse toggleFeatured(Long bookId, String role) {
         log.info("Toggling featured status for book: {}", bookId);
         verifyAdmin(role);
@@ -260,11 +237,6 @@ public class BookService {
 
     // Uploads and configures a cover image for a book.
     @Transactional
-    @Caching(evict = {
-        @CacheEvict(value = "books:all", allEntries = true),
-        @CacheEvict(value = "books:id", key = "#bookId"),
-        @CacheEvict(value = "books:featured", allEntries = true)
-    })
     public BookResponse uploadCoverImage(Long bookId, MultipartFile file, String role) {
         log.info("Uploading cover image for book: {}", bookId);
         verifyAdmin(role);
@@ -286,7 +258,6 @@ public class BookService {
     }
 
     // Retrieves all active catalog book entities.
-    @Cacheable(value = "books:all")
     public List<BookResponse> getAllBooks() {
         log.info("Fetching all active books");
         return bookRepository.findByActiveTrue().stream()
@@ -295,7 +266,6 @@ public class BookService {
     }
 
     // Fetches a single book by database ID.
-    @Cacheable(value = "books:id", key = "#bookId")
     public BookResponse getBookById(Long bookId) {
         log.info("Fetching book by ID: {}", bookId);
         Book book = bookRepository.findByBookIdAndActiveTrue(bookId)
@@ -347,7 +317,6 @@ public class BookService {
     }
 
     // Retrieves all promoted featured books.
-    @Cacheable(value = "books:featured")
     public List<BookResponse> getFeaturedBooks() {
         log.info("Fetching featured books");
         try {
@@ -395,11 +364,6 @@ public class BookService {
 
     // Reserves and decrements inventory stock for a new order.
     @Transactional
-    @Caching(evict = {
-        @CacheEvict(value = "books:all", allEntries = true),
-        @CacheEvict(value = "books:id", key = "#bookId"),
-        @CacheEvict(value = "books:featured", allEntries = true)
-    })
     public boolean reserveStock(Long bookId, Integer quantity) {
         Book book = bookRepository.findById(bookId).orElseThrow(() -> new ResourceNotFoundException("Book not found"));
         if (book.getStock() < quantity) return false;
@@ -413,11 +377,6 @@ public class BookService {
 
     // Releases and increments inventory stock when an order is cancelled or falls back.
     @Transactional
-    @Caching(evict = {
-        @CacheEvict(value = "books:all", allEntries = true),
-        @CacheEvict(value = "books:id", key = "#bookId"),
-        @CacheEvict(value = "books:featured", allEntries = true)
-    })
     public void releaseStock(Long bookId, Integer quantity) {
         Book book = bookRepository.findById(bookId).orElseThrow(() -> new ResourceNotFoundException("Book not found"));
         book.setStock(book.getStock() + quantity);

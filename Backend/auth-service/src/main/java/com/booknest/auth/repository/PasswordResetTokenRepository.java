@@ -16,4 +16,6 @@ public interface PasswordResetTokenRepository extends JpaRepository<PasswordRese
     @Transactional
     @Modifying
     void deleteByUserAuthEntity(User user);
+    // Modifying is used to indicate that this query modifies the database
+    // InvalidDataAccessApiUsageException .
 }

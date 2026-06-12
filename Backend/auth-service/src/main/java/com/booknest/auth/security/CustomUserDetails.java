@@ -25,6 +25,8 @@ public class CustomUserDetails implements UserDetails {
         return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getRole()));
     }
 
+    // it defines how many authorities an authenticated user has.
+
     @Override
     public String getPassword() {
         return user.getPasswordHash();

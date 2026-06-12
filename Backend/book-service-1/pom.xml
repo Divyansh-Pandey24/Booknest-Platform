@@ -99,11 +99,7 @@
             <artifactId>spring-boot-starter-aop</artifactId>
         </dependency>
 
-        <!-- SPRING DATA REDIS — for book caching -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-redis</artifactId>
-        </dependency>
+
 
         <!-- CLOUDINARY — for cloud-based image storage -->
         <dependency>

@@ -13,6 +13,7 @@ public class RegisterRequest {
     // User's full name (required)
     @NotBlank(message = "Full name is required")
     @Size(min = 2, max = 50, message = "Full name must be between 2 and 50 characters")
+    @Pattern(regexp = "^[a-zA-Z\\-']+(?: [a-zA-Z\\-']+)*$", message = "Full name can only contain letters, single spaces, hyphens and apostrophes, and cannot start or end with a space")
     private String fullName;
 
     // User's email address (required, must be valid)
